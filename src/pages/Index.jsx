@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -37,13 +36,13 @@ const features = [
   },
 ];
 
-const Index: React.FC = () => {
+const Index = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, getUserRole } = useAuth();
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
-      navigate(user?.role === 'admin' ? '/admin' : '/dashboard');
+      navigate(getUserRole() === 'admin' ? '/admin' : '/dashboard');
     } else {
       navigate('/signup');
     }
