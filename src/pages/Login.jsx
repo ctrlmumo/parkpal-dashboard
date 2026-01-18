@@ -1,30 +1,28 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth, UserRole } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Car, Shield, Mail, Lock, User, Loader2 } from 'lucide-react';
+import { Car, Shield, Mail, Lock, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const Signup: React.FC = () => {
+const Login = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
+  const { login } = useAuth();
   const { toast } = useToast();
   
-  const [role, setRole] = useState<UserRole>('driver');
-  const [name, setName] = useState('');
+  const [role, setRole] = useState('driver');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!name || !email || !password || !confirmPassword) {
+    if (!email || !password) {
       toast({
         title: 'Error',
         description: 'Please fill in all fields',
@@ -33,37 +31,19 @@ const Signup: React.FC = () => {
       return;
     }
 
-    if (password !== confirmPassword) {
-      toast({
-        title: 'Error',
-        description: 'Passwords do not match',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      toast({
-        title: 'Error',
-        description: 'Password must be at least 6 characters',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setIsLoading(true);
     
     try {
-      await signup(name, email, password, role);
+      await login(email, password, role);
       toast({
-        title: 'Account created!',
-        description: 'Welcome to ParkHub',
+        title: 'Welcome back!',
+        description: `Logged in as ${role}`,
       });
       navigate(role === 'admin' ? '/admin' : '/dashboard');
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to create account',
+        description: 'Invalid credentials',
         variant: 'destructive',
       });
     } finally {
@@ -86,13 +66,13 @@ const Signup: React.FC = () => {
 
         <Card className="border-0 shadow-xl">
           <CardHeader className="text-center pb-2">
-            <CardTitle className="font-display text-2xl">Create Account</CardTitle>
-            <CardDescription>Get started with ParkHub today</CardDescription>
+            <CardTitle className="font-display text-2xl">Welcome Back</CardTitle>
+            <CardDescription>Sign in to your account to continue</CardDescription>
           </CardHeader>
           
           <CardContent className="pt-4">
             {/* Role Tabs */}
-            <Tabs value={role} onValueChange={(v) => setRole(v as UserRole)} className="mb-6">
+            <Tabs value={role} onValueChange={setRole} className="mb-6">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="driver" className="gap-2">
                   <Car className="h-4 w-4" />
@@ -106,21 +86,6 @@ const Signup: React.FC = () => {
             </Tabs>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -151,21 +116,6 @@ const Signup: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
               <Button 
                 type="submit" 
                 variant="hero" 
@@ -175,18 +125,18 @@ const Signup: React.FC = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
+                    Signing in...
                   </>
                 ) : (
-                  'Create Account'
+                  'Sign In'
                 )}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-muted-foreground">Already have an account? </span>
-              <Link to="/login" className="text-primary font-medium hover:underline">
-                Sign in
+              <span className="text-muted-foreground">Don't have an account? </span>
+              <Link to="/signup" className="text-primary font-medium hover:underline">
+                Sign up
               </Link>
             </div>
           </CardContent>
@@ -196,4 +146,4 @@ const Signup: React.FC = () => {
   );
 };
 
-export default Signup;
+export default Login;

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useParking } from '@/contexts/ParkingContext';
 import Header from '@/components/layout/Header';
@@ -19,8 +18,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -39,21 +36,11 @@ const revenueData = [
   { name: '10PM', revenue: 2800 },
 ];
 
-const occupancyData = [
-  { name: 'Mon', occupancy: 85 },
-  { name: 'Tue', occupancy: 72 },
-  { name: 'Wed', occupancy: 78 },
-  { name: 'Thu', occupancy: 90 },
-  { name: 'Fri', occupancy: 95 },
-  { name: 'Sat', occupancy: 65 },
-  { name: 'Sun', occupancy: 45 },
-];
-
 const COLORS = ['#22c55e', '#ef4444', '#f59e0b', '#6b7280'];
 
-const AdminDashboard: React.FC = () => {
-  const { user } = useAuth();
-  const { slots, bookings } = useParking();
+const AdminDashboard = () => {
+  const { getUserDisplayName } = useAuth();
+  const { slots, reservations, parkingLot } = useParking();
 
   const stats = {
     available: slots.filter(s => s.status === 'available').length,
@@ -64,7 +51,7 @@ const AdminDashboard: React.FC = () => {
 
   const totalSlots = slots.length;
   const occupancyRate = Math.round(((stats.occupied + stats.reserved) / totalSlots) * 100);
-  const todayRevenue = bookings.reduce((sum, b) => b.paymentStatus === 'completed' ? sum + b.amount : sum, 0);
+  const todayRevenue = reservations.reduce((sum, r) => r.payment_status === 'completed' ? sum + (r.amount || 0) : sum, 0);
 
   const pieData = [
     { name: 'Available', value: stats.available },
@@ -85,7 +72,7 @@ const AdminDashboard: React.FC = () => {
               Admin Dashboard
             </h1>
             <p className="text-muted-foreground mt-1">
-              Welcome back, {user?.name}
+              Welcome back, {getUserDisplayName()} • {parkingLot.name}
             </p>
           </div>
           
@@ -196,40 +183,6 @@ const AdminDashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Occupancy Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display flex items-center gap-2">
-                <Clock className="h-5 w-5 text-amber-600" />
-                Weekly Occupancy Rate
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={occupancyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }} 
-                  />
-                  <Bar 
-                    dataKey="occupancy" 
-                    fill="hsl(var(--primary))" 
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Slot Status & Recent Activity */}
-        <div className="grid gap-6 lg:grid-cols-3">
           {/* Slot Status Pie */}
           <Card>
             <CardHeader>
@@ -271,46 +224,46 @@ const AdminDashboard: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
 
-          {/* Recent Bookings */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="font-display flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                Recent Bookings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {bookings.slice(0, 5).map(booking => (
-                  <div 
-                    key={booking.id}
-                    className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-semibold text-sm">
-                        {booking.slotNumber}
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{booking.vehicleNumber}</p>
-                        <p className="text-xs text-muted-foreground">{booking.duration}h parking</p>
-                      </div>
+        {/* Recent Reservations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-display flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              Recent Reservations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {reservations.slice(0, 5).map(reservation => (
+                <div 
+                  key={reservation.id}
+                  className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-semibold text-sm">
+                      {reservation.slot_number}
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-sm text-green-600">KES {booking.amount}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{booking.paymentStatus}</p>
+                    <div>
+                      <p className="font-medium text-sm">{reservation.vehicle_number}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{reservation.status}</p>
                     </div>
                   </div>
-                ))}
-                {bookings.length === 0 && (
-                  <p className="text-center text-muted-foreground py-8">
-                    No bookings yet
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-sm text-green-600">KES {reservation.amount || 0}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{reservation.payment_status}</p>
+                  </div>
+                </div>
+              ))}
+              {reservations.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  No reservations yet
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
