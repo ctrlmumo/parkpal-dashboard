@@ -1,3 +1,4 @@
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Car, LogOut, Menu, User } from 'lucide-react';
@@ -11,17 +12,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-const Header = () => {
-  const { user, logout, isAuthenticated, getUserDisplayName, getUserRole } = useAuth();
+const Header: React.FC = () => {
+  const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
-
-  const userRole = getUserRole();
-  const displayName = getUserDisplayName();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -37,7 +35,7 @@ const Header = () => {
           <>
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-6">
-              {userRole === 'driver' && (
+              {user?.role === 'driver' && (
                 <>
                   <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                     Dashboard
@@ -47,7 +45,7 @@ const Header = () => {
                   </Link>
                 </>
               )}
-              {userRole === 'admin' && (
+              {user?.role === 'admin' && (
                 <>
                   <Link to="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                     Dashboard
@@ -70,13 +68,13 @@ const Header = () => {
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                       <User className="h-4 w-4" />
                     </div>
-                    <span className="text-sm font-medium">{displayName}</span>
+                    <span className="text-sm font-medium">{user?.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{displayName}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{userRole}</p>
+                    <p className="text-sm font-medium">{user?.name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
@@ -100,13 +98,13 @@ const Header = () => {
                         <User className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="font-medium">{displayName}</p>
-                        <p className="text-sm text-muted-foreground capitalize">{userRole}</p>
+                        <p className="font-medium">{user?.name}</p>
+                        <p className="text-sm text-muted-foreground capitalize">{user?.role}</p>
                       </div>
                     </div>
                     
                     <nav className="flex flex-col gap-2">
-                      {userRole === 'driver' && (
+                      {user?.role === 'driver' && (
                         <>
                           <Link to="/dashboard" className="px-3 py-2 rounded-lg hover:bg-muted transition-colors">
                             Dashboard
@@ -116,7 +114,7 @@ const Header = () => {
                           </Link>
                         </>
                       )}
-                      {userRole === 'admin' && (
+                      {user?.role === 'admin' && (
                         <>
                           <Link to="/admin" className="px-3 py-2 rounded-lg hover:bg-muted transition-colors">
                             Dashboard

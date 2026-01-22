@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useParking } from '@/contexts/ParkingContext';
+import React, { useState } from 'react';
+import { useParking, SlotStatus } from '@/contexts/ParkingContext';
 import Header from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -22,27 +23,27 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Settings2, Car, CircleCheck, Clock, Wrench } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const statusConfig = {
+const statusConfig: Record<SlotStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
   available: { label: 'Available', variant: 'default', icon: CircleCheck },
   occupied: { label: 'Occupied', variant: 'destructive', icon: Car },
   reserved: { label: 'Reserved', variant: 'secondary', icon: Clock },
   maintenance: { label: 'Maintenance', variant: 'outline', icon: Wrench },
 };
 
-const AdminSlotManagement = () => {
-  const { slots, updateSlotStatus, parkingLot } = useParking();
+const AdminSlotManagement: React.FC = () => {
+  const { slots, updateSlotStatus } = useParking();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
 
   const filteredSlots = slots.filter(slot => {
-    const matchesSearch = slot.slot_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      slot.vehicle_number?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = slot.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      slot.vehicleNumber?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || slot.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
-  const handleStatusChange = (slotId, newStatus) => {
+  const handleStatusChange = (slotId: string, newStatus: SlotStatus) => {
     updateSlotStatus(slotId, newStatus);
     toast({
       title: 'Slot Updated',
@@ -62,7 +63,7 @@ const AdminSlotManagement = () => {
               Slot Management
             </h1>
             <p className="text-muted-foreground mt-1">
-              Manage and override parking slot statuses • {parkingLot.name}
+              Manage and override parking slot statuses
             </p>
           </div>
         </div>
@@ -118,7 +119,7 @@ const AdminSlotManagement = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredSlots.map(slot => {
-                    const config = statusConfig[slot.status] || statusConfig.available;
+                    const config = statusConfig[slot.status];
                     const StatusIcon = config.icon;
                     
                     return (
@@ -126,7 +127,7 @@ const AdminSlotManagement = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary font-semibold text-sm">
-                              {slot.slot_number}
+                              {slot.number}
                             </div>
                           </div>
                         </TableCell>
@@ -138,14 +139,14 @@ const AdminSlotManagement = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {slot.vehicle_number || (
+                          {slot.vehicleNumber || (
                             <span className="text-muted-foreground">—</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
                           <Select
                             value={slot.status}
-                            onValueChange={(value) => handleStatusChange(slot.id, value)}
+                            onValueChange={(value) => handleStatusChange(slot.id, value as SlotStatus)}
                           >
                             <SelectTrigger className="w-36 ml-auto">
                               <SelectValue />

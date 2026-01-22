@@ -1,12 +1,16 @@
-import { useState } from 'react';
-import { useParking } from '@/contexts/ParkingContext';
+import React, { useState } from 'react';
+import { useParking, ParkingSlot } from '@/contexts/ParkingContext';
 import ParkingSlotComponent from './ParkingSlot';
 import { Badge } from '@/components/ui/badge';
 import { Car, CircleCheck, Clock, Wrench } from 'lucide-react';
 
-const ParkingGrid = ({ onSlotSelect }) => {
+interface ParkingGridProps {
+  onSlotSelect: (slot: ParkingSlot) => void;
+}
+
+const ParkingGrid: React.FC<ParkingGridProps> = ({ onSlotSelect }) => {
   const { slots } = useParking();
-  const [selectedSection, setSelectedSection] = useState('all');
+  const [selectedSection, setSelectedSection] = useState<string>('all');
 
   const sections = ['all', ...new Set(slots.map(s => s.section))];
   

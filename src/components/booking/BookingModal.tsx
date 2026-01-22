@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParking } from '@/contexts/ParkingContext';
+import React, { useState } from 'react';
+import { ParkingSlot, useParking } from '@/contexts/ParkingContext';
 import {
   Dialog,
   DialogContent,
@@ -19,16 +19,24 @@ import {
 import { Car, Clock, Wallet, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const BookingModal = ({ slot, isOpen, onClose }) => {
+interface BookingModalProps {
+  slot: ParkingSlot | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+type Step = 'details' | 'payment' | 'processing' | 'success';
+
+const BookingModal: React.FC<BookingModalProps> = ({ slot, isOpen, onClose }) => {
   const { reserveSlot, completePayment } = useParking();
   const { toast } = useToast();
   
-  const [step, setStep] = useState('details');
+  const [step, setStep] = useState<Step>('details');
   const [vehicleNumber, setVehicleNumber] = useState('');
   const [duration, setDuration] = useState('1');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [reservationId, setReservationId] = useState(null);
+  const [bookingId, setBookingId] = useState<string | null>(null);
 
   const pricePerHour = 50; // KES
   const totalAmount = parseInt(duration) * pricePerHour;
@@ -39,7 +47,7 @@ const BookingModal = ({ slot, isOpen, onClose }) => {
     setDuration('1');
     setPhoneNumber('');
     setIsLoading(false);
-    setReservationId(null);
+    setBookingId(null);
   };
 
   const handleClose = () => {
@@ -74,11 +82,11 @@ const BookingModal = ({ slot, isOpen, onClose }) => {
 
     try {
       // Reserve the slot
-      const reservation = await reserveSlot(slot.id, vehicleNumber, parseInt(duration));
-      setReservationId(reservation.id);
+      const booking = await reserveSlot(slot!.id, vehicleNumber, parseInt(duration));
+      setBookingId(booking.id);
       
       // Simulate M-Pesa payment
-      await completePayment(reservation.id);
+      await completePayment(booking.id);
       
       setStep('success');
     } catch (error) {
@@ -112,10 +120,10 @@ const BookingModal = ({ slot, isOpen, onClose }) => {
             {/* Slot Info */}
             <div className="flex items-center gap-4 rounded-xl bg-primary/5 p-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-lg gradient-primary text-primary-foreground">
-                <span className="text-lg font-bold">{slot.slot_number}</span>
+                <span className="text-lg font-bold">{slot.number}</span>
               </div>
               <div>
-                <p className="font-semibold">Slot {slot.slot_number}</p>
+                <p className="font-semibold">Slot {slot.number}</p>
                 <p className="text-sm text-muted-foreground">Section {slot.section}</p>
               </div>
             </div>
@@ -192,7 +200,7 @@ const BookingModal = ({ slot, isOpen, onClose }) => {
             <div className="text-center">
               <p className="text-2xl font-bold">KES {totalAmount}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Slot {slot.slot_number} • {duration} hour(s)
+                Slot {slot.number} • {duration} hour(s)
               </p>
             </div>
 
@@ -263,7 +271,7 @@ const BookingModal = ({ slot, isOpen, onClose }) => {
             <div className="rounded-xl bg-muted/50 p-4 text-left">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <span className="text-muted-foreground">Slot:</span>
-                <span className="font-medium">{slot.slot_number}</span>
+                <span className="font-medium">{slot.number}</span>
                 <span className="text-muted-foreground">Vehicle:</span>
                 <span className="font-medium">{vehicleNumber}</span>
                 <span className="text-muted-foreground">Duration:</span>

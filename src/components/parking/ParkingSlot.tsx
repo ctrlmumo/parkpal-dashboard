@@ -1,5 +1,13 @@
+import React from 'react';
+import { ParkingSlot as ParkingSlotType } from '@/contexts/ParkingContext';
 import { Car, Wrench, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+interface ParkingSlotProps {
+  slot: ParkingSlotType;
+  onClick?: (slot: ParkingSlotType) => void;
+  compact?: boolean;
+}
 
 const statusConfig = {
   available: {
@@ -32,8 +40,8 @@ const statusConfig = {
   },
 };
 
-const ParkingSlotComponent = ({ slot, onClick, compact = false }) => {
-  const config = statusConfig[slot.status] || statusConfig.available;
+const ParkingSlotComponent: React.FC<ParkingSlotProps> = ({ slot, onClick, compact = false }) => {
+  const config = statusConfig[slot.status];
   const StatusIcon = config.icon;
   const isClickable = slot.status === 'available' || slot.status === 'reserved';
 
@@ -54,7 +62,7 @@ const ParkingSlotComponent = ({ slot, onClick, compact = false }) => {
         <StatusIcon className={cn('mb-1', compact ? 'h-4 w-4' : 'h-6 w-6')} />
       )}
       <span className={cn('font-semibold', compact ? 'text-xs' : 'text-sm')}>
-        {slot.slot_number}
+        {slot.number}
       </span>
       {!compact && (
         <span className="text-xs opacity-75 mt-0.5">{config.label}</span>

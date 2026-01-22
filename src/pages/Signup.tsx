@@ -1,28 +1,30 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Car, Shield, Mail, Lock, Loader2 } from 'lucide-react';
+import { Car, Shield, Mail, Lock, User, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const Login = () => {
+const Signup: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const { toast } = useToast();
   
-  const [role, setRole] = useState('driver');
+  const [role, setRole] = useState<UserRole>('driver');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    if (!name || !email || !password || !confirmPassword) {
       toast({
         title: 'Error',
         description: 'Please fill in all fields',
@@ -31,19 +33,37 @@ const Login = () => {
       return;
     }
 
+    if (password !== confirmPassword) {
+      toast({
+        title: 'Error',
+        description: 'Passwords do not match',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: 'Error',
+        description: 'Password must be at least 6 characters',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      await login(email, password, role);
+      await signup(name, email, password, role);
       toast({
-        title: 'Welcome back!',
-        description: `Logged in as ${role}`,
+        title: 'Account created!',
+        description: 'Welcome to ParkHub',
       });
       navigate(role === 'admin' ? '/admin' : '/dashboard');
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Invalid credentials',
+        description: 'Failed to create account',
         variant: 'destructive',
       });
     } finally {
@@ -66,13 +86,13 @@ const Login = () => {
 
         <Card className="border-0 shadow-xl">
           <CardHeader className="text-center pb-2">
-            <CardTitle className="font-display text-2xl">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your account to continue</CardDescription>
+            <CardTitle className="font-display text-2xl">Create Account</CardTitle>
+            <CardDescription>Get started with ParkHub today</CardDescription>
           </CardHeader>
           
           <CardContent className="pt-4">
             {/* Role Tabs */}
-            <Tabs value={role} onValueChange={setRole} className="mb-6">
+            <Tabs value={role} onValueChange={(v) => setRole(v as UserRole)} className="mb-6">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="driver" className="gap-2">
                   <Car className="h-4 w-4" />
@@ -86,6 +106,21 @@ const Login = () => {
             </Tabs>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -116,6 +151,21 @@ const Login = () => {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
               <Button 
                 type="submit" 
                 variant="hero" 
@@ -125,18 +175,18 @@ const Login = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
+                    Creating account...
                   </>
                 ) : (
-                  'Sign In'
+                  'Create Account'
                 )}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-muted-foreground">Don't have an account? </span>
-              <Link to="/signup" className="text-primary font-medium hover:underline">
-                Sign up
+              <span className="text-muted-foreground">Already have an account? </span>
+              <Link to="/login" className="text-primary font-medium hover:underline">
+                Sign in
               </Link>
             </div>
           </CardContent>
@@ -146,4 +196,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;

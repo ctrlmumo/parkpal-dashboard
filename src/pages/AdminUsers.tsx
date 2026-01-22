@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useParking } from '@/contexts/ParkingContext';
 import Header from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,27 +18,27 @@ import { format } from 'date-fns';
 
 // Mock historical data
 const mockHistory = [
-  { id: '1', vehicle_number: 'KAB 123X', slot_number: 'A01', duration: 2, amount: 100, date: new Date(2024, 0, 15, 10, 30), status: 'completed' },
-  { id: '2', vehicle_number: 'KCA 456Y', slot_number: 'B05', duration: 4, amount: 200, date: new Date(2024, 0, 15, 8, 0), status: 'completed' },
-  { id: '3', vehicle_number: 'KDB 789Z', slot_number: 'C12', duration: 1, amount: 50, date: new Date(2024, 0, 14, 14, 15), status: 'completed' },
-  { id: '4', vehicle_number: 'KAA 111A', slot_number: 'A08', duration: 6, amount: 300, date: new Date(2024, 0, 14, 9, 0), status: 'completed' },
-  { id: '5', vehicle_number: 'KBB 222B', slot_number: 'D03', duration: 3, amount: 150, date: new Date(2024, 0, 13, 16, 45), status: 'completed' },
+  { id: '1', vehicleNumber: 'KAB 123X', slotNumber: 'A01', duration: 2, amount: 100, date: new Date(2024, 0, 15, 10, 30), status: 'completed' },
+  { id: '2', vehicleNumber: 'KCA 456Y', slotNumber: 'B05', duration: 4, amount: 200, date: new Date(2024, 0, 15, 8, 0), status: 'completed' },
+  { id: '3', vehicleNumber: 'KDB 789Z', slotNumber: 'C12', duration: 1, amount: 50, date: new Date(2024, 0, 14, 14, 15), status: 'completed' },
+  { id: '4', vehicleNumber: 'KAA 111A', slotNumber: 'A08', duration: 6, amount: 300, date: new Date(2024, 0, 14, 9, 0), status: 'completed' },
+  { id: '5', vehicleNumber: 'KBB 222B', slotNumber: 'D03', duration: 3, amount: 150, date: new Date(2024, 0, 13, 16, 45), status: 'completed' },
 ];
 
-const AdminUsers = () => {
-  const { reservations, slots } = useParking();
+const AdminUsers: React.FC = () => {
+  const { bookings, slots } = useParking();
   const [searchTerm, setSearchTerm] = useState('');
 
   const activeReservations = slots.filter(s => s.status === 'reserved' || s.status === 'occupied');
 
   const filteredActive = activeReservations.filter(slot =>
-    slot.vehicle_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    slot.slot_number.toLowerCase().includes(searchTerm.toLowerCase())
+    slot.vehicleNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    slot.number.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredHistory = mockHistory.filter(item =>
-    item.vehicle_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.slot_number.toLowerCase().includes(searchTerm.toLowerCase())
+    item.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.slotNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -111,11 +111,11 @@ const AdminUsers = () => {
                         <TableRow key={slot.id}>
                           <TableCell>
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary font-semibold text-sm">
-                              {slot.slot_number}
+                              {slot.number}
                             </div>
                           </TableCell>
                           <TableCell className="font-medium">
-                            {slot.vehicle_number || '—'}
+                            {slot.vehicleNumber || '—'}
                           </TableCell>
                           <TableCell>
                             <Badge variant={slot.status === 'occupied' ? 'destructive' : 'secondary'}>
@@ -169,10 +169,10 @@ const AdminUsers = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary font-semibold text-sm">
-                              {item.slot_number}
+                              {item.slotNumber}
                             </div>
                           </TableCell>
-                          <TableCell className="font-medium">{item.vehicle_number}</TableCell>
+                          <TableCell className="font-medium">{item.vehicleNumber}</TableCell>
                           <TableCell>{item.duration}h</TableCell>
                           <TableCell className="font-semibold text-green-600">
                             KES {item.amount}
